@@ -45,6 +45,7 @@ const Dashboard = () => {
     });
     const [loading, setLoading] = useState(true);
     const [recentLogs, setRecentLogs] = useState([]);
+    const [alerts, setAlerts] = useState([]);
     const [error, setError] = useState(null);
     const [debugInfo, setDebugInfo] = useState("");
 
@@ -110,106 +111,8 @@ const Dashboard = () => {
         }
     };
 
-    // Alert state definition was missing in previous snippet? Checking history.
-    // Wait, in step 640 view_file: const [alerts, setAlerts] = useState([]); WAS present at line 17.
-    // But in the replacement/refactor (step 660), I might have lost it? 
-    // Step 660 modifies fetchDashboardData but doesn't show useState section.
-    // Step 701 view_file shows line 17: const [error, setError] = useState(null); 
-    // Wait... look at lines 15-18 in Step 701:
-    // 15: const [loading, setLoading] = useState(true);
-    // 16: const [recentLogs, setRecentLogs] = useState([]);
-    // 17: const [error, setError] = useState(null);
-    // 18: const [debugInfo, setDebugInfo] = useState("");
-    // WHERE IS [alerts, setAlerts]? 
-    // It seems "alerts" state was accidentally removed when I added "error" state in Step 660 or confused the diff.
-    // The previous state was:
-    // const [recentLogs, setRecentLogs] = useState([]);
-    // const [alerts, setAlerts] = useState([]);
-    // Step 660 diff:
-    // - const [alerts, setAlerts] = useState([]);
-    // + const [error, setError] = useState(null);
-    // + const [debugInfo, setDebugInfo] = useState("");
-    //
-    // CRITICAL FINDING: I DELETED `alerts` state! This caused another ReferenceError crash in the JSX where `alerts.length` is accessed.
-
-    const [alerts, setAlerts] = useState([]); // Restoring this!
-
     return (
         <div className="space-y-6 font-sans">
-<<<<<<< HEAD
-
-            <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
-            </div>
-
-            <LifecycleController />
-
-    {/* Row 1: Top Stats Cards */ }
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard
-            title="Total Voters"
-            value="95 Crores"
-            trend="Trend = 95 Crores"
-            icon={<Users className="text-white" size={20} />}
-            color="bg-[#138808]" // Green
-            trendValue={true}
-        />
-        <StatsCard
-            title="Polling Stations"
-            value="1.2 Lakhs"
-            trend="Trend = 1,200"
-            icon={<Building2 className="text-white" size={20} />}
-            color="bg-[#000080]" // Blue
-        />
-        <StatsCard
-            title="Candidates"
-            value="8,500"
-            trend="Trend - 6,500"
-            icon={<AlertTriangle className="text-white" size={20} />}
-            color="bg-[#FF9933]" // Orange
-        />
-        <StatsCard
-            title="Election Status"
-            value="Live"
-            subtext="Blinking Status Live"
-            icon={<Radio className="text-white animate-pulse" size={20} />}
-            color="bg-[#138808]" // Green
-            isStatus={true}
-        />
-    </div>
-
-    {/* Row 2: Left Stats Column & Right Chart */ }
-    <div className="flex flex-col lg:flex-row gap-6">
-
-        {/* Left Column Vertical Stats */}
-        <div className="w-full lg:w-1/4 space-y-4">
-            {/* Stat Item 1 */}
-            <SideStatCard
-                title="Polling Stations"
-                value="1.2K Lakhs"
-                trend="Trend = 1.2 Lakhs"
-                icon={<Building2 className="text-white" size={18} />}
-                color="bg-[#000080]"
-            />
-
-            {/* Stat Item 2 */}
-            <SideStatCard
-                title="Candidates"
-                value="8,500"
-                trend="Trend > 8,500"
-                icon={<AlertTriangle className="text-white" size={18} />}
-                color="bg-[#FF9933]"
-            />
-
-            {/* Stat Item 3 */}
-            <SideStatCard
-                title="Polling Stations"
-                value="1.2 Lakhs"
-                trend="Trend > 1.2 Lakhs"
-                icon={<Building2 className="text-white" size={18} />}
-                color="bg-[#138808]"
-            />
-=======
             {/* Header Section */}
             <div className="flex flex-col mb-4">
                 <div className="flex items-center justify-between mb-2">
@@ -221,8 +124,9 @@ const Dashboard = () => {
                         <Activity size={16} />
                         <span>System Status: OPERATIONAL</span>
                     </div>
->>>>>>> origin/main
                 </div>
+
+                <LifecycleController />
 
                 {error && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
@@ -352,7 +256,7 @@ const Dashboard = () => {
                 </div>
             </div>
         </div>
-        );
+    );
 };
 
-        export default Dashboard;
+export default Dashboard;
