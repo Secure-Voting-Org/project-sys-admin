@@ -64,7 +64,7 @@ const Login = () => {
                                 required
                                 value={formData.username}
                                 onChange={handleChange}
-                                className="w-full pl-5 pr-5 py-4 border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-[#FF9933]/10 focus:border-[#FF9933] outline-none transition-all text-gray-900 placeholder-gray-300 bg-white shadow-sm font-semibold text-lg"
+                                className="w-full pl-5 pr-5 py-4 border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-[#FF9933]/10 focus:border-[#FF9933] outline-none transition-all text-gray-800 placeholder-gray-300 bg-white shadow-sm font-semibold text-lg"
                                 placeholder="e.g. EC-ADMIN-01"
                             />
                         </div>
@@ -84,7 +84,7 @@ const Login = () => {
                                 required
                                 value={formData.password}
                                 onChange={handleChange}
-                                className="w-full pl-5 pr-14 py-4 border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-[#138808]/10 focus:border-[#138808] outline-none transition-all text-gray-900 placeholder-gray-300 bg-white shadow-sm font-semibold text-lg"
+                                className="w-full pl-5 pr-14 py-4 border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-[#138808]/10 focus:border-[#138808] outline-none transition-all text-gray-800 placeholder-gray-300 bg-white shadow-sm font-semibold text-lg"
                                 placeholder="••••••••••••"
                             />
                             <button
@@ -125,7 +125,7 @@ const Login = () => {
                     <div className="mt-6 flex justify-center">
                         <div className="px-4 py-1.5 bg-gray-50 rounded-full border border-gray-100 flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Secure Gateway Active</span>
+                            <span className="text-[10px] text-gray-800 font-bold uppercase tracking-wider">Secure Gateway Active</span>
                         </div>
                     </div>
                 </div>

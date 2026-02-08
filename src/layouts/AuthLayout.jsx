@@ -14,7 +14,7 @@ const AuthLayout = ({ children, title, subtitle }) => {
             <div className="w-full max-w-5xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] overflow-hidden flex flex-col lg:flex-row min-h-[600px] border border-white/50 relative z-10 transition-all duration-500 hover:shadow-[0_30px_70px_-15px_rgba(255,153,51,0.15)] ring-1 ring-white/60">
 
                 {/* Left Side: Premium Branding - Vibrant Tricolor Gradient with Glass */}
-                <div className="w-full lg:w-5/12 bg-gradient-to-br from-[#FF8C00] via-[#ffffff] to-[#00A000] text-[#000080] flex flex-col justify-between p-10 lg:p-14 relative overflow-hidden group">
+                <div className="w-full lg:w-5/12 bg-gradient-to-br from-[#FF8C00] via-[#ffffff] to-[#00A000] text-gray-800 flex flex-col justify-between p-10 lg:p-14 relative overflow-hidden group">
 
                     {/* Glossy Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-black/5 via-transparent to-white/40 mix-blend-overlay"></div>
@@ -95,7 +95,7 @@ const AuthLayout = ({ children, title, subtitle }) => {
                                 <div className="w-2 h-2 rounded-full bg-[#FF9933] shadow-sm"></div>
                                 <div className="w-2 h-2 rounded-full bg-white border border-gray-300 shadow-sm"></div>
                                 <div className="w-2 h-2 rounded-full bg-[#138808] shadow-sm"></div>
-                                <div className="w-2 h-2 rounded-full bg-[#000080] shadow-sm"></div>
+                                <div className="w-2 h-2 rounded-full bg-[#000080] text-white shadow-sm"></div>
                             </div>
                         </div>
                     </div>

@@ -56,7 +56,7 @@ const Register = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
+                        <label className="block text-sm font-semibold text-gray-800 mb-1.5">Full Name</label>
                         <input
                             name="fullName"
                             type="text"
@@ -68,7 +68,7 @@ const Register = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Username</label>
+                        <label className="block text-sm font-semibold text-gray-800 mb-1.5">Username</label>
                         <input
                             name="username"
                             type="text"
@@ -82,7 +82,7 @@ const Register = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-1.5">Email Address</label>
                     <input
                         name="email"
                         type="email"
@@ -95,7 +95,7 @@ const Register = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-1.5">Password</label>
                     <input
                         name="password"
                         type="password"
@@ -105,7 +105,7 @@ const Register = () => {
                         className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#000080]/20 focus:border-[#000080] outline-none transition-all placeholder-gray-400"
                         placeholder="Create strong password"
                     />
-                    <p className="mt-1 text-xs text-gray-400">Must be at least 8 characters long.</p>
+                    <p className="mt-1 text-xs text-gray-800">Must be at least 8 characters long.</p>
                 </div>
 
                 <div className="pt-4">
@@ -128,7 +128,7 @@ const Register = () => {
             </form>
 
             <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-800">
                     Already have an account?{' '}
                     <Link to="/login" style={{ color: '#000080' }} className="font-bold hover:underline transition-colors">
                         Sign in instead
