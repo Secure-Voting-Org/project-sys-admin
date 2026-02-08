@@ -1,5 +1,6 @@
 import React from 'react';
 import { Users, Vote, AlertTriangle, Radio, TrendingUp, Building2, UserCheck, ArrowUp } from 'lucide-react';
+import LifecycleController from '../components/LifecycleController';
 
 const Dashboard = () => {
     return (
@@ -8,6 +9,8 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-2">
                 <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
             </div>
+
+            <LifecycleController />
 
             {/* Row 1: Top Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
