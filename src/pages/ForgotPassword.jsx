@@ -101,7 +101,7 @@ const ForgotPassword = () => {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-5 pr-5 py-4 border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-[#FF9933]/10 focus:border-[#FF9933] outline-none transition-all text-gray-900 font-semibold text-lg bg-white shadow-sm"
+                                    className="w-full pl-5 pr-5 py-4 border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-[#FF9933]/10 focus:border-[#FF9933] outline-none transition-all text-gray-800 font-semibold text-lg bg-white shadow-sm"
                                     placeholder="officer@eci.gov.in"
                                 />
                             </div>
@@ -142,7 +142,7 @@ const ForgotPassword = () => {
                         <button
                             type="button"
                             onClick={() => setStep(1)}
-                            className="w-full text-xs font-bold text-gray-400 hover:text-[#1a237e] transition-colors uppercase tracking-wider"
+                            className="w-full text-xs font-bold text-gray-800 hover:text-[#1a237e] transition-colors uppercase tracking-wider"
                         >
                             Start Over
                         </button>
@@ -158,7 +158,7 @@ const ForgotPassword = () => {
                                 required
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full pl-5 pr-5 py-4 border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-[#1a237e]/10 focus:border-[#1a237e] outline-none transition-all text-gray-900 font-semibold text-lg bg-white shadow-sm"
+                                className="w-full pl-5 pr-5 py-4 border-2 border-gray-100 rounded-2xl focus:ring-4 focus:ring-[#1a237e]/10 focus:border-[#1a237e] outline-none transition-all text-gray-800 font-semibold text-lg bg-white shadow-sm"
                                 placeholder="Enter strong password"
                             />
                         </div>
