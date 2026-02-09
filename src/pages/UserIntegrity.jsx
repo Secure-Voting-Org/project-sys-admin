@@ -17,7 +17,7 @@ const UserIntegrity = () => {
 
     const fetchVoters = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:8081/api/admin/voters`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/voters`);
             if (res.ok) {
                 const data = await res.json();
                 setVoters(data);

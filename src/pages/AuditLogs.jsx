@@ -1,20 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Search, RefreshCw, AlertCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Shield, Search, RefreshCw, AlertCircle, CheckCircle, XCircle, Clock, Lock } from 'lucide-react';
 
 export default function AuditLogs() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [integrityStatus, setIntegrityStatus] = useState({ status: 'LOADING', lastChecked: null });
+    const [nextCheckIn, setNextCheckIn] = useState(5);
 
     useEffect(() => {
         fetchLogs();
+        fetchIntegrityStatus();
+
+        const timer = setInterval(() => {
+            setNextCheckIn(prev => {
+                if (prev <= 1) {
+                    fetchIntegrityStatus();
+                    return 5;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
     }, []);
+
+    const fetchIntegrityStatus = async () => {
+        try {
+            const res = await fetch(`http://${window.location.hostname}:5000/api/audit/integrity-status?t=${Date.now()}`);
+            const data = await res.json();
+            setIntegrityStatus(data);
+        } catch (err) {
+            console.error("Integrity Check Failed", err);
+        }
+    };
 
     const fetchLogs = async () => {
         setLoading(true);
         const startTime = Date.now();
         try {
-            const res = await fetch(`http://${window.location.hostname}:8081/api/audit/logs`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/audit/logs`);
             const data = await res.json();
             if (Array.isArray(data)) {
                 setLogs(data);
@@ -22,7 +47,6 @@ export default function AuditLogs() {
         } catch (err) {
             console.error("Failed to fetch logs");
         } finally {
-            // Ensure spinner shows for at least 800ms for UX
             const elapsed = Date.now() - startTime;
             if (elapsed < 800) {
                 setTimeout(() => setLoading(false), 800 - elapsed);
@@ -30,6 +54,12 @@ export default function AuditLogs() {
                 setLoading(false);
             }
         }
+    };
+
+    const handleManualRefresh = () => {
+        fetchLogs();
+        fetchIntegrityStatus();
+        setNextCheckIn(5);
     };
 
     const filteredLogs = logs.filter(log =>
@@ -49,16 +79,43 @@ export default function AuditLogs() {
 
     return (
         <div className="space-y-6">
+            {/* Blockchain Integrity Watchdog */}
+            <div className={`p-6 rounded-xl border flex items-center justify-between ${integrityStatus.status === 'HEALTHY' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-xl text-white shadow-sm ${integrityStatus.status === 'HEALTHY' ? 'bg-green-600' : 'bg-red-600'}`}>
+                        <Shield size={24} />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-800">Blockchain Integrity Watchdog</h3>
+                        <p className="text-sm text-gray-600">
+                            {integrityStatus.status === 'HEALTHY'
+                                ? 'All blocks verified. Ledger is immutable and secure.'
+                                : integrityStatus.message || 'Tamper detected or connection failed!'}
+                        </p>
+                    </div>
+                </div>
+                <div className="text-right">
+                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase ${integrityStatus.status === 'HEALTHY' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {integrityStatus.status === 'HEALTHY' ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
+                        {integrityStatus.status}
+                    </div>
+                    <div className="text-xs text-blue-600 font-bold mt-2 flex items-center justify-end gap-1">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                        Next Scan in {nextCheckIn}s
+                    </div>
+                </div>
+            </div>
+
             <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                        <Shield className="text-blue-600" /> System Audit Logs
+                        <Lock className="text-blue-600" /> System Audit Logs
                     </h2>
                     <p className="text-gray-800 text-sm mt-1">Immutable record of all critical system events.</p>
                 </div>
                 <button
                     type="button"
-                    onClick={fetchLogs}
+                    onClick={handleManualRefresh}
                     disabled={loading}
                     className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors font-semibold"
                 >
@@ -78,6 +135,9 @@ export default function AuditLogs() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                         />
+                    </div>
+                    <div className="ml-auto flex items-center gap-2 text-sm text-gray-500">
+                        <span className="font-bold text-gray-800">{filteredLogs.length}</span> Total Events
                     </div>
                 </div>
 

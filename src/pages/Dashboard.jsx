@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Vote, AlertTriangle, Radio, TrendingUp, Building2, UserCheck, ArrowUp, Activity, Shield, Database, Server, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import LifecycleController from '../components/LifecycleController';
+
 
 const Widget = ({ title, value, icon, color, subtext, onClick, isAlert }) => (
     <div
@@ -55,7 +55,7 @@ const Dashboard = () => {
 
     const fetchDashboardData = async () => {
         try {
-            const baseUrl = `http://${window.location.hostname}:8081`;
+            const baseUrl = `http://${window.location.hostname}:5000`;
             setDebugInfo(`Fetching from: ${baseUrl}`);
 
             // 1. Fetch Admins
@@ -126,7 +126,7 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                <LifecycleController />
+
 
                 {error && (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">

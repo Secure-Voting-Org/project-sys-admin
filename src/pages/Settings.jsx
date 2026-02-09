@@ -13,7 +13,7 @@ const Settings = () => {
 
     const fetchSettings = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:8081/api/election/status`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/election/status`);
             if (res.ok) {
                 const data = await res.json();
                 setPhase(data.phase);
@@ -32,7 +32,7 @@ const Settings = () => {
         if (newKillSwitch !== undefined) payload.isKillSwitch = newKillSwitch;
 
         try {
-            const res = await fetch(`http://${window.location.hostname}:8081/api/election/update`, {
+            const res = await fetch(`http://${window.location.hostname}:5000/api/election/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -66,18 +66,39 @@ const Settings = () => {
 
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">Election Phase Control</h3>
+                <div className={`mb-6 p-4 rounded-lg border flex items-center justify-between ${phase === 'LIVE' ? 'bg-green-100 border-green-300 text-green-900' :
+                        phase === 'POST_POLL' ? 'bg-blue-100 border-blue-300 text-blue-900' :
+                            'bg-gray-100 border-gray-300 text-gray-800'
+                    }`}>
+                    <div>
+                        <span className="text-sm font-semibold uppercase tracking-wider opacity-70">Current Phase</span>
+                        <div className="text-2xl font-bold">
+                            {phase === 'PRE_POLL' && 'PRE-POLL (REGISTRATION)'}
+                            {phase === 'LIVE' && 'VOTING IS LIVE'}
+                            {phase === 'POST_POLL' && 'ELECTION ENDED'}
+                            {!['PRE_POLL', 'LIVE', 'POST_POLL'].includes(phase) && phase}
+                        </div>
+                    </div>
+                    <div className="text-3xl">
+                        {phase === 'LIVE' ? '🟢' : phase === 'POST_POLL' ? '🏁' : '📝'}
+                    </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {['PRE_POLL', 'VOTING', 'ENDED'].map((p) => (
+                    {[
+                        { id: 'PRE_POLL', label: 'PRE POLL' },
+                        { id: 'LIVE', label: 'VOTING' },
+                        { id: 'POST_POLL', label: 'ENDED' }
+                    ].map((p) => (
                         <button
-                            key={p}
-                            onClick={() => updateSettings(p, undefined)}
+                            key={p.id}
+                            onClick={() => updateSettings(p.id, undefined)}
                             disabled={loading}
-                            className={`p-4 rounded-lg border-2 font-bold transition-all ${phase === p
+                            className={`p-4 rounded-lg border-2 font-bold transition-all ${phase === p.id
                                 ? 'border-green-600 bg-green-50 text-green-700 shadow-sm'
                                 : 'border-gray-200 hover:border-gray-300 text-gray-800'
                                 }`}
                         >
-                            {p.replace('_', ' ')}
+                            {p.label}
                         </button>
                     ))}
                 </div>
