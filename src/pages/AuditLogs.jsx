@@ -27,7 +27,7 @@ export default function AuditLogs() {
 
     const fetchIntegrityStatus = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5001/api/audit/integrity-status?t=${Date.now()}`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/audit/integrity-status?t=${Date.now()}`);
             const data = await res.json();
             setIntegrityStatus(data);
         } catch (err) {
@@ -39,7 +39,7 @@ export default function AuditLogs() {
         setLoading(true);
         const startTime = Date.now();
         try {
-            const res = await fetch(`http://${window.location.hostname}:5001/api/audit/logs`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/audit/logs`);
             const data = await res.json();
             if (Array.isArray(data)) {
                 setLogs(data);
@@ -68,8 +68,8 @@ export default function AuditLogs() {
     );
 
     const getEventStyle = (event) => {
-        if (event.includes('FAILED') || event.includes('LOCKED') || event.includes('FRAUD')) {
-            return { bg: '#fff5f5', color: '#c53030', border: '#fc8181', icon: AlertCircle };
+        if (event.includes('FAILED') || event.includes('LOCKED')) {
+            return { bg: '#fff5f5', color: '#c53030', border: '#fc8181', icon: XCircle };
         }
         if (event.includes('APPROVED') || event.includes('VERIFIED') || event.includes('VOTE_CAST') || event.includes('LOGIN')) {
             return { bg: '#f0fdf4', color: '#166534', border: '#86efac', icon: CheckCircle };

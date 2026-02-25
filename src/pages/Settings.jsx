@@ -13,7 +13,7 @@ const Settings = () => {
 
     const fetchSettings = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5001/api/election/status`);
+            const res = await fetch(`http://${window.location.hostname}:5000/api/election/status`);
             if (res.ok) {
                 const data = await res.json();
                 setPhase(data.phase);
@@ -32,7 +32,7 @@ const Settings = () => {
         if (newKillSwitch !== undefined) payload.isKillSwitch = newKillSwitch;
 
         try {
-            const res = await fetch(`http://${window.location.hostname}:5001/api/election/update`, {
+            const res = await fetch(`http://${window.location.hostname}:5000/api/election/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -152,7 +152,7 @@ const Settings = () => {
                                 <button
                                     onClick={async () => {
                                         try {
-                                            const res = await fetch(`http://${window.location.hostname}:5001/api/admin/inject-fake-vote`, {
+                                            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/inject-fake-vote`, {
                                                 method: 'POST',
                                                 headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
                                             });
@@ -174,7 +174,7 @@ const Settings = () => {
                                 <button
                                     onClick={async () => {
                                         try {
-                                            const res = await fetch(`http://${window.location.hostname}:5001/api/admin/clear-fake-votes`, {
+                                            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/clear-fake-votes`, {
                                                 method: 'POST',
                                                 headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
                                             });
