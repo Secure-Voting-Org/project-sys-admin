@@ -10,6 +10,7 @@ import AdminManagement from './pages/AdminManagement';
 import SystemHealth from './pages/SystemHealth';
 import AuditLogs from './pages/AuditLogs';
 import Settings from './pages/Settings';
+import PerformanceDashboard from './pages/PerformanceDashboard';
 
 // Protected Route Component
 const ProtectedRoute = () => {
@@ -40,6 +41,7 @@ function App() {
             {/* Monitoring */}
             <Route path="health" element={<SystemHealth />} />
             <Route path="audit-logs" element={<AuditLogs />} />
+            <Route path="performance" element={<PerformanceDashboard />} />
 
             {/* Configuration */}
             <Route path="settings" element={<Settings />} />

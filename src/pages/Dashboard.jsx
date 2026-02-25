@@ -50,12 +50,17 @@ const Dashboard = () => {
     const [debugInfo, setDebugInfo] = useState("");
 
     useEffect(() => {
-        fetchDashboardData();
+        fetchDashboardData(); // Initial fetch
+        const interval = setInterval(() => {
+            fetchDashboardData();
+        }, 5001); // Polling every 5 seconds for live updates
+
+        return () => clearInterval(interval); // Cleanup on unmount
     }, []);
 
     const fetchDashboardData = async () => {
         try {
-            const baseUrl = `http://${window.location.hostname}:5000`;
+            const baseUrl = `http://${window.location.hostname}:5001`;
             setDebugInfo(`Fetching from: ${baseUrl}`);
 
             // 1. Fetch Admins
@@ -84,12 +89,25 @@ const Dashboard = () => {
 
             // Filter critical alerts
             const securityIncidents = Array.isArray(logs) ? logs.filter(l =>
-                l.event && (l.event.includes('FAILED') || l.event.includes('LOCKED') || l.event.includes('UNAUTHORIZED'))
+                l.event && (l.event.includes('FAILED') || l.event.includes('LOCKED') || l.event.includes('UNAUTHORIZED') || l.event.includes('FRAUD'))
             ) : [];
 
-            const recentCritical = securityIncidents.slice(0, 3).map((l, i) => ({
-                id: i, type: 'critical', message: `${l.event} - ${l.user_id || 'Unknown'}`, time: new Date(l.created_at).toLocaleTimeString()
-            }));
+            const recentCritical = securityIncidents.slice(0, 3).map((l, i) => {
+                let subType = '';
+                try {
+                    if (l.details) {
+                        const parsed = typeof l.details === 'string' ? JSON.parse(l.details) : l.details;
+                        if (parsed.fraud_type) subType = ` [${parsed.fraud_type.replace(/_/g, ' ')}]`;
+                    }
+                } catch (e) { }
+
+                return {
+                    id: i,
+                    type: 'critical',
+                    message: `${l.event}${subType} - ${l.user_id || 'Unknown'}`,
+                    time: new Date(l.created_at).toLocaleTimeString()
+                };
+            });
 
             setStats({
                 activeAdmins: Array.isArray(admins) ? admins.length : 0,
@@ -238,7 +256,18 @@ const Dashboard = () => {
                                         <div className="h-2 w-2 rounded-full bg-blue-500 ring-2 ring-blue-100"></div>
                                     </div>
                                     <div>
-                                        <div className="font-semibold text-gray-800">{log?.event?.replace(/_/g, ' ') || 'Unknown Event'}</div>
+                                        <div className="font-semibold text-gray-800">
+                                            {log?.event?.replace(/_/g, ' ') || 'Unknown Event'}
+                                            {(() => {
+                                                try {
+                                                    if (log.details) {
+                                                        const parsed = typeof log.details === 'string' ? JSON.parse(log.details) : log.details;
+                                                        if (parsed.fraud_type) return ` [${parsed.fraud_type.replace(/_/g, ' ')}]`;
+                                                    }
+                                                } catch (e) { }
+                                                return '';
+                                            })()}
+                                        </div>
                                         <div className="text-xs text-gray-800 font-mono mt-1">{log?.user_id || 'System'}</div>
                                         <div className="text-xs text-gray-800 mt-1">{log?.created_at ? new Date(log.created_at).toLocaleTimeString() : ''}</div>
                                     </div>

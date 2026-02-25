@@ -13,7 +13,7 @@ const Settings = () => {
 
     const fetchSettings = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/election/status`);
+            const res = await fetch(`http://${window.location.hostname}:5001/api/election/status`);
             if (res.ok) {
                 const data = await res.json();
                 setPhase(data.phase);
@@ -32,7 +32,7 @@ const Settings = () => {
         if (newKillSwitch !== undefined) payload.isKillSwitch = newKillSwitch;
 
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/election/update`, {
+            const res = await fetch(`http://${window.location.hostname}:5001/api/election/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -67,8 +67,8 @@ const Settings = () => {
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">Election Phase Control</h3>
                 <div className={`mb-6 p-4 rounded-lg border flex items-center justify-between ${phase === 'LIVE' ? 'bg-green-100 border-green-300 text-green-900' :
-                        phase === 'POST_POLL' ? 'bg-blue-100 border-blue-300 text-blue-900' :
-                            'bg-gray-100 border-gray-300 text-gray-800'
+                    phase === 'POST_POLL' ? 'bg-blue-100 border-blue-300 text-blue-900' :
+                        'bg-gray-100 border-gray-300 text-gray-800'
                     }`}>
                     <div>
                         <span className="text-sm font-semibold uppercase tracking-wider opacity-70">Current Phase</span>
@@ -130,6 +130,70 @@ const Settings = () => {
                                 {killSwitch ? 'SYSTEM HALTED' : 'ACTIVATE KILL SWITCH'}
                             </button>
                             {killSwitch && <span className="text-red-600 font-bold animate-pulse">SYSTEM IS CURRENTLY OFFLINE</span>}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Security Drills Section */}
+            <div className="bg-orange-50 p-6 rounded-xl border border-orange-200 mt-6">
+                <div className="flex items-start gap-4">
+                    <div className="p-3 bg-orange-100 text-orange-600 rounded-lg">
+                        <ShieldAlert size={24} />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-orange-800">Security Drills (Testing)</h3>
+                        <p className="text-sm text-orange-700 mb-4">
+                            Tools to test and demonstrate system security features. These actions simulate real-world attacks.
+                        </p>
+
+                        <div className="flex flex-col gap-3">
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch(`http://${window.location.hostname}:5001/api/admin/inject-fake-vote`, {
+                                                method: 'POST',
+                                                headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
+                                            });
+                                            if (res.ok) {
+                                                setMessage({ type: 'success', text: 'Simulated Database Breach. Watchdog alert triggered.' });
+                                            } else {
+                                                setMessage({ type: 'error', text: 'Failed to simulate breach.' });
+                                            }
+                                            setTimeout(() => setMessage(null), 3000);
+                                        } catch (err) {
+                                            console.error(err);
+                                        }
+                                    }}
+                                    className="self-start px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-colors"
+                                >
+                                    Simulate Database Breach (Math Mismatch)
+                                </button>
+
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch(`http://${window.location.hostname}:5001/api/admin/clear-fake-votes`, {
+                                                method: 'POST',
+                                                headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
+                                            });
+                                            if (res.ok) {
+                                                setMessage({ type: 'success', text: 'Test data cleared! The Watchdog alarm should stop.' });
+                                            } else {
+                                                setMessage({ type: 'error', text: 'Failed to clear tests.' });
+                                            }
+                                            setTimeout(() => setMessage(null), 3000);
+                                        } catch (err) {
+                                            console.error(err);
+                                        }
+                                    }}
+                                    className="self-start px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg transition-colors"
+                                >
+                                    Reset / Clear Test Data
+                                </button>
+                            </div>
+                            <p className="text-xs text-orange-600 italic">Injects a fraudulent raw vote into the database directly. Use 'Reset' to stop the alarm after the demo.</p>
                         </div>
                     </div>
                 </div>

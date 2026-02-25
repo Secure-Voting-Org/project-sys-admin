@@ -60,7 +60,7 @@ const Header = () => {
                                             if (adminUser) {
                                                 const admin = JSON.parse(adminUser);
                                                 // Log logout event
-                                                await fetch(`http://${window.location.hostname}:5000/api/admin/logout`, {
+                                                await fetch(`http://${window.location.hostname}:5001/api/admin/logout`, {
                                                     method: 'POST',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({

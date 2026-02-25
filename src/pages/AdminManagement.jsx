@@ -24,7 +24,7 @@ const AdminManagement = () => {
 
     const fetchAdmins = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/list`);
+            const res = await fetch(`http://${window.location.hostname}:5001/api/admin/list`);
             if (res.ok) {
                 const data = await res.json();
                 setAdmins(data);
@@ -69,7 +69,7 @@ const AdminManagement = () => {
     // Submit Form (Create/Edit)
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const baseUrl = `http://${window.location.hostname}:5000`;
+        const baseUrl = `http://${window.location.hostname}:5001`;
 
         try {
             let res;
@@ -106,7 +106,7 @@ const AdminManagement = () => {
         if (!window.confirm("Are you sure you want to delete this admin? This action cannot be undone.")) return;
 
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/${id}`, {
+            const res = await fetch(`http://${window.location.hostname}:5001/api/admin/${id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
