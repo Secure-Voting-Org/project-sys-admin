@@ -59,6 +59,24 @@ const LifecycleController = () => {
         }
     };
 
+    const startNewElection = async () => {
+        if (!window.confirm("WARNING: This will permanently wipe all current non-archived vote data, reset everyone's 'has_voted' status, and delete the cryptographic keys. Are you SURE you want to Start a New Election?")) return;
+        setLoading(true);
+        try {
+            await fetch(`http://${window.location.hostname}:5000/api/admin/election/reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            fetchStatus();
+            alert("Election has been effectively reset to PRE_POLL state.");
+        } catch (err) {
+            console.log(err);
+            alert("Reset failed.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (!status) return <div>Loading Status...</div>;
 
     return (
@@ -131,21 +149,23 @@ const LifecycleController = () => {
                     <h4 style={{ marginTop: 0 }}>Phase Flow Control</h4>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
 
-                        <button
-                            className="btn"
-                            disabled={status.phase === 'PRE_POLL' || loading}
-                            onClick={() => updatePhase('PRE_POLL')}
-                            style={{
-                                opacity: status.phase === 'PRE_POLL' ? 1 : 0.5,
-                                background: '#E3F2FD', color: '#1565C0', border: '1px solid #1565C0'
-                            }}
-                        >
-                            ⏮ Reset to Pre-Poll
-                        </button>
+                        {status.phase === 'POST_POLL' && (
+                            <button
+                                className="btn"
+                                disabled={loading}
+                                onClick={startNewElection}
+                                style={{
+                                    background: '#ffebee', color: '#c62828', border: '2px solid #c62828',
+                                    fontWeight: 'bold'
+                                }}
+                            >
+                                🔄 Start New Election (Wipe & Reset)
+                            </button>
+                        )}
 
                         <button
                             className="btn btn-primary"
-                            disabled={status.phase === 'LIVE' || loading}
+                            disabled={status.phase === 'LIVE' || status.phase === 'POST_POLL' || loading}
                             onClick={() => updatePhase('LIVE')}
                             style={{
                                 transform: 'scale(1.1)',

@@ -29,6 +29,7 @@ const Login = () => {
             const data = await api.login(formData);
 
             if (data.success) {
+                localStorage.setItem('sysadmin_token', data.token);
                 localStorage.setItem('adminUser', JSON.stringify(data.admin));
                 navigate('/');
             } else {

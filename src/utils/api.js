@@ -1,6 +1,15 @@
 export const API_BASE_URL = '/api/sys-admin';
 
 export const api = {
+    getHeaders: () => {
+        const headers = { 'Content-Type': 'application/json' };
+        const token = localStorage.getItem('sysadmin_token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        return headers;
+    },
+
     login: async (credentials) => {
         const response = await fetch(`${API_BASE_URL}/login`, {
             method: 'POST',

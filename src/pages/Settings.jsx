@@ -26,6 +26,29 @@ const Settings = () => {
         }
     };
 
+    const startNewElection = async () => {
+        if (!window.confirm("WARNING: This will permanently wipe all current non-archived vote data, reset everyone's 'has_voted' status, and delete the cryptographic keys. Are you SURE you want to Start a New Election?")) return;
+        setLoading(true);
+        try {
+            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/election/reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (res.ok) {
+                setMessage({ type: 'success', text: 'Election successfully reset to PRE-POLL state.' });
+                setPhase('PRE_POLL');
+            } else {
+                setMessage({ type: 'error', text: 'Failed to reset election.' });
+            }
+        } catch (err) {
+            console.error(err);
+            setMessage({ type: 'error', text: 'Reset request failed.' });
+        } finally {
+            setLoading(false);
+            setTimeout(() => setMessage(null), 3000);
+        }
+    };
+
     const updateSettings = async (newPhase, newKillSwitch) => {
         const payload = {};
         if (newPhase) payload.phase = newPhase;
@@ -83,24 +106,49 @@ const Settings = () => {
                         {phase === 'LIVE' ? '🟢' : phase === 'POST_POLL' ? '🏁' : '📝'}
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {[
-                        { id: 'PRE_POLL', label: 'PRE POLL' },
-                        { id: 'LIVE', label: 'VOTING' },
-                        { id: 'POST_POLL', label: 'ENDED' }
-                    ].map((p) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Reset / New Election Button */}
+                    {phase === 'POST_POLL' ? (
                         <button
-                            key={p.id}
-                            onClick={() => updateSettings(p.id, undefined)}
+                            onClick={startNewElection}
                             disabled={loading}
-                            className={`p-4 rounded-lg border-2 font-bold transition-all ${phase === p.id
-                                ? 'border-green-600 bg-green-50 text-green-700 shadow-sm'
-                                : 'border-gray-200 hover:border-gray-300 text-gray-800'
-                                }`}
+                            className="p-4 rounded-lg border-2 font-bold transition-all border-red-300 bg-red-50 text-red-700 hover:bg-red-100"
                         >
-                            {p.label}
+                            🔄 START NEW ELECTION
                         </button>
-                    ))}
+                    ) : (
+                        <button
+                            disabled={true}
+                            className="p-4 rounded-lg font-bold transition-all border-2 border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                        >
+                            PRE POLL (Locked)
+                        </button>
+                    )}
+
+                    {/* Go Live Button */}
+                    <button
+                        onClick={() => updateSettings('LIVE', undefined)}
+                        disabled={loading || phase === 'LIVE' || phase === 'POST_POLL'}
+                        className={`p-4 rounded-lg border-2 font-bold transition-all ${phase === 'LIVE'
+                            ? 'border-green-600 bg-green-50 text-green-700 shadow-sm'
+                            : phase === 'POST_POLL' ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'border-blue-300 hover:border-blue-400 text-blue-700 bg-blue-50'
+                            }`}
+                    >
+                        VOTING (LIVE)
+                    </button>
+
+                    {/* Post Poll Button */}
+                    <button
+                        onClick={() => updateSettings('POST_POLL', undefined)}
+                        disabled={loading || phase === 'POST_POLL'}
+                        className={`p-4 rounded-lg border-2 font-bold transition-all ${phase === 'POST_POLL'
+                            ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm'
+                            : 'border-orange-300 hover:border-orange-400 text-orange-700 bg-orange-50'
+                            }`}
+                    >
+                        ENDED (POST POLL)
+                    </button>
                 </div>
                 <p className="text-sm text-gray-800 mt-4">
                     <strong>PRE POLL:</strong> Registration open, Voting closed.<br />
