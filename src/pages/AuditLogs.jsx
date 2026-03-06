@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Search, RefreshCw, AlertCircle, CheckCircle, XCircle, Clock, Lock } from 'lucide-react';
+import API_BASE from '../config/api';
 
 export default function AuditLogs() {
     const [logs, setLogs] = useState([]);
@@ -27,7 +28,12 @@ export default function AuditLogs() {
 
     const fetchIntegrityStatus = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/audit/integrity-status?t=${Date.now()}`);
+            const token = localStorage.getItem('sysadmin_token');
+            const res = await fetch(`${API_BASE}/api/audit/integrity-status?t=${Date.now()}`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
             setIntegrityStatus(data);
         } catch (err) {
@@ -39,7 +45,12 @@ export default function AuditLogs() {
         setLoading(true);
         const startTime = Date.now();
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/audit/logs`);
+            const token = localStorage.getItem('sysadmin_token');
+            const res = await fetch(`${API_BASE}/api/audit/logs`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             const data = await res.json();
             if (Array.isArray(data)) {
                 setLogs(data);

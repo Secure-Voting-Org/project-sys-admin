@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Trash2, Mail, Shield, X, Edit2, CheckCircle, AlertTriangle } from 'lucide-react';
+import API_BASE from '../config/api';
 
 const AdminManagement = () => {
     const [admins, setAdmins] = useState([]);
@@ -24,7 +25,12 @@ const AdminManagement = () => {
 
     const fetchAdmins = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/list`);
+            const token = localStorage.getItem('sysadmin_token');
+            const res = await fetch(`${API_BASE}/api/admin/list`, {
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
+            });
             if (res.ok) {
                 const data = await res.json();
                 setAdmins(data);
@@ -69,21 +75,27 @@ const AdminManagement = () => {
     // Submit Form (Create/Edit)
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const baseUrl = `http://${window.location.hostname}:5000`;
+        const baseUrl = API_BASE;
 
         try {
+            const token = localStorage.getItem('sysadmin_token');
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+
             let res;
             if (modalMode === 'create') {
                 res = await fetch(`${baseUrl}/api/admin/register`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(formData)
                 });
             } else {
                 // Edit Mode
                 res = await fetch(`${baseUrl}/api/admin/${selectedAdmin.id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(formData)
                 });
             }
@@ -106,8 +118,12 @@ const AdminManagement = () => {
         if (!window.confirm("Are you sure you want to delete this admin? This action cannot be undone.")) return;
 
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/${id}`, {
-                method: 'DELETE'
+            const token = localStorage.getItem('sysadmin_token');
+            const res = await fetch(`${API_BASE}/api/admin/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
             });
             if (res.ok) {
                 setMessage({ type: 'success', text: 'Admin deleted successfully' });

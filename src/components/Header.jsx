@@ -1,4 +1,5 @@
 import React from 'react';
+import API_BASE from '../config/api';
 import { Bell, ChevronDown, User, LogOut } from 'lucide-react';
 
 const Header = () => {
@@ -59,10 +60,14 @@ const Header = () => {
                                             const adminUser = localStorage.getItem('adminUser');
                                             if (adminUser) {
                                                 const admin = JSON.parse(adminUser);
+                                                const token = localStorage.getItem('sysadmin_token');
                                                 // Log logout event
-                                                await fetch(`http://${window.location.hostname}:5000/api/admin/logout`, {
+                                                await fetch(`${API_BASE}/api/admin/logout`, {
                                                     method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json' },
+                                                    headers: { 
+                                                        'Content-Type': 'application/json',
+                                                        'Authorization': token ? `Bearer ${token}` : ''
+                                                    },
                                                     body: JSON.stringify({
                                                         username: admin.username,
                                                         role: admin.role

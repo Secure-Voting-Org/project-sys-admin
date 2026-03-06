@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ToggleLeft, ToggleRight, Save, ShieldAlert } from 'lucide-react';
+import API_BASE from '../config/api';
 
 const Settings = () => {
     const [phase, setPhase] = useState('');
@@ -13,7 +14,7 @@ const Settings = () => {
 
     const fetchSettings = async () => {
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/election/status`);
+            const res = await fetch(`${API_BASE}/api/election/status`);
             if (res.ok) {
                 const data = await res.json();
                 setPhase(data.phase);
@@ -30,9 +31,13 @@ const Settings = () => {
         if (!window.confirm("WARNING: This will permanently wipe all current non-archived vote data, reset everyone's 'has_voted' status, and delete the cryptographic keys. Are you SURE you want to Start a New Election?")) return;
         setLoading(true);
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/election/reset`, {
+            const token = localStorage.getItem('sysadmin_token');
+            const res = await fetch(`${API_BASE}/api/admin/election/reset`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                }
             });
             if (res.ok) {
                 setMessage({ type: 'success', text: 'Election successfully reset to PRE-POLL state.' });
@@ -55,9 +60,13 @@ const Settings = () => {
         if (newKillSwitch !== undefined) payload.isKillSwitch = newKillSwitch;
 
         try {
-            const res = await fetch(`http://${window.location.hostname}:5000/api/election/update`, {
+            const token = localStorage.getItem('sysadmin_token');
+            const res = await fetch(`${API_BASE}/api/election/update`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify(payload)
             });
 
@@ -200,9 +209,12 @@ const Settings = () => {
                                 <button
                                     onClick={async () => {
                                         try {
-                                            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/inject-fake-vote`, {
+                                            const token = localStorage.getItem('sysadmin_token');
+                                            const res = await fetch(`${API_BASE}/api/admin/inject-fake-vote`, {
                                                 method: 'POST',
-                                                headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
+                                                headers: { 
+                                                    'Authorization': token ? `Bearer ${token}` : ''
+                                                }
                                             });
                                             if (res.ok) {
                                                 setMessage({ type: 'success', text: 'Simulated Database Breach. Watchdog alert triggered.' });
@@ -222,9 +234,12 @@ const Settings = () => {
                                 <button
                                     onClick={async () => {
                                         try {
-                                            const res = await fetch(`http://${window.location.hostname}:5000/api/admin/clear-fake-votes`, {
+                                            const token = localStorage.getItem('sysadmin_token');
+                                            const res = await fetch(`${API_BASE}/api/admin/clear-fake-votes`, {
                                                 method: 'POST',
-                                                headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` }
+                                                headers: { 
+                                                    'Authorization': token ? `Bearer ${token}` : ''
+                                                }
                                             });
                                             if (res.ok) {
                                                 setMessage({ type: 'success', text: 'Test data cleared! The Watchdog alarm should stop.' });

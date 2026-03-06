@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Vote, AlertTriangle, Radio, TrendingUp, Building2, UserCheck, ArrowUp, Activity, Shield, Database, Server, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import API_BASE from '../config/api';
 
 
 const Widget = ({ title, value, icon, color, subtext, onClick, isAlert }) => (
@@ -55,16 +56,22 @@ const Dashboard = () => {
 
     const fetchDashboardData = async () => {
         try {
-            const baseUrl = `http://${window.location.hostname}:5000`;
+            const baseUrl = API_BASE;
             setDebugInfo(`Fetching from: ${baseUrl}`);
 
             // 1. Fetch Admins
-            const adminsRes = await fetch(`${baseUrl}/api/admin/list`);
+            const token = localStorage.getItem('sysadmin_token');
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+
+            const adminsRes = await fetch(`${baseUrl}/api/admin/list`, { headers });
             if (!adminsRes.ok) throw new Error(`Admins API Error: ${adminsRes.statusText}`);
             const admins = await adminsRes.json();
 
             // 2. Fetch Voters & Calculate Stats
-            const votersRes = await fetch(`${baseUrl}/api/admin/voters`);
+            const votersRes = await fetch(`${baseUrl}/api/admin/voters`, { headers });
             if (!votersRes.ok) throw new Error(`Voters API Error: ${votersRes.statusText}`);
             const voters = await votersRes.json();
             const votesCast = Array.isArray(voters) ? voters.filter(v => v.has_voted).length : 0;
@@ -72,7 +79,7 @@ const Dashboard = () => {
             // 3. Fetch Logs (Handle fail gracefully)
             let logs = [];
             try {
-                const logsRes = await fetch(`${baseUrl}/api/audit/logs`);
+                const logsRes = await fetch(`${baseUrl}/api/audit/logs`, { headers });
                 if (logsRes.ok) {
                     logs = await logsRes.json();
                 } else {
