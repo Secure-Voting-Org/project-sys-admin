@@ -1,4 +1,6 @@
-export const API_BASE_URL = '/api/sys-admin';
+import API_BASE from '../config/api';
+
+export const API_BASE_URL = `${API_BASE}/api/sys-admin`;
 
 export const api = {
     getHeaders: () => {
