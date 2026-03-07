@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Vote, AlertTriangle, Radio, TrendingUp, Building2, UserCheck, ArrowUp, Activity, Shield, Database, Server, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API_BASE from '../config/api';
+import { api } from '../utils/api';
 
 
 const Widget = ({ title, value, icon, color, subtext, onClick, isAlert }) => (
@@ -60,19 +61,21 @@ const Dashboard = () => {
             setDebugInfo(`Fetching from: ${baseUrl}`);
 
             // 1. Fetch Admins
-            const token = localStorage.getItem('sysadmin_token');
-            const headers = {
-                'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : ''
-            };
+            const headers = api.getHeaders();
 
             const adminsRes = await fetch(`${baseUrl}/api/admin/list`, { headers });
-            if (!adminsRes.ok) throw new Error(`Admins API Error: ${adminsRes.statusText}`);
+            if (!adminsRes.ok) {
+                const errorData = await adminsRes.json().catch(() => ({}));
+                throw new Error(errorData.error || `Admins API Error: ${adminsRes.statusText}`);
+            }
             const admins = await adminsRes.json();
 
             // 2. Fetch Voters & Calculate Stats
             const votersRes = await fetch(`${baseUrl}/api/admin/voters`, { headers });
-            if (!votersRes.ok) throw new Error(`Voters API Error: ${votersRes.statusText}`);
+            if (!votersRes.ok) {
+                const errorData = await votersRes.json().catch(() => ({}));
+                throw new Error(errorData.error || `Voters API Error: ${votersRes.statusText}`);
+            }
             const voters = await votersRes.json();
             const votesCast = Array.isArray(voters) ? voters.filter(v => v.has_voted).length : 0;
 

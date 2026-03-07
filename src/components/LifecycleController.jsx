@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API_BASE from '../config/api';
+import { api } from '../utils/api';
 import { Play, Pause, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 
 const LifecycleController = () => {
@@ -24,13 +25,10 @@ const LifecycleController = () => {
         if (!window.confirm(`Are you sure you want to switch to ${newPhase} phase?`)) return;
         setLoading(true);
         try {
-            const token = localStorage.getItem('sysadmin_token');
+            const headers = api.getHeaders();
             await fetch(`${API_BASE}/api/election/update`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
+                headers,
                 body: JSON.stringify({ phase: newPhase })
             });
             fetchStatus();
@@ -51,13 +49,10 @@ const LifecycleController = () => {
 
         setLoading(true);
         try {
-            const token = localStorage.getItem('sysadmin_token');
+            const headers = api.getHeaders();
             await fetch(`${API_BASE}/api/election/update`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
+                headers,
                 body: JSON.stringify({ isKillSwitch: !status.is_kill_switch_active })
             });
             fetchStatus();
@@ -72,13 +67,10 @@ const LifecycleController = () => {
         if (!window.confirm("WARNING: This will permanently wipe all current non-archived vote data, reset everyone's 'has_voted' status, and delete the cryptographic keys. Are you SURE you want to Start a New Election?")) return;
         setLoading(true);
         try {
-            const token = localStorage.getItem('sysadmin_token');
+            const headers = api.getHeaders();
             await fetch(`${API_BASE}/api/admin/election/reset`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                }
+                headers
             });
             fetchStatus();
             alert("Election has been effectively reset to PRE_POLL state.");

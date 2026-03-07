@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Trash2, Mail, Shield, X, Edit2, CheckCircle, AlertTriangle } from 'lucide-react';
 import API_BASE from '../config/api';
+import { api } from '../utils/api';
 
 const AdminManagement = () => {
     const [admins, setAdmins] = useState([]);
@@ -25,15 +26,16 @@ const AdminManagement = () => {
 
     const fetchAdmins = async () => {
         try {
-            const token = localStorage.getItem('sysadmin_token');
+            const headers = api.getHeaders();
             const res = await fetch(`${API_BASE}/api/admin/list`, {
-                headers: {
-                    'Authorization': token ? `Bearer ${token}` : ''
-                }
+                headers
             });
             if (res.ok) {
                 const data = await res.json();
                 setAdmins(data);
+            } else {
+                const errorData = await res.json().catch(() => ({}));
+                setMessage({ type: 'error', text: errorData.error || `Failed to fetch admins: ${res.statusText}` });
             }
         } catch (err) {
             console.error("Failed to fetch admins", err);
@@ -78,11 +80,7 @@ const AdminManagement = () => {
         const baseUrl = API_BASE;
 
         try {
-            const token = localStorage.getItem('sysadmin_token');
-            const headers = {
-                'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : ''
-            };
+            const headers = api.getHeaders();
 
             let res;
             if (modalMode === 'create') {
@@ -118,12 +116,10 @@ const AdminManagement = () => {
         if (!window.confirm("Are you sure you want to delete this admin? This action cannot be undone.")) return;
 
         try {
-            const token = localStorage.getItem('sysadmin_token');
+            const headers = api.getHeaders();
             const res = await fetch(`${API_BASE}/api/admin/${id}`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': token ? `Bearer ${token}` : ''
-                }
+                headers
             });
             if (res.ok) {
                 setMessage({ type: 'success', text: 'Admin deleted successfully' });

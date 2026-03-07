@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ToggleLeft, ToggleRight, Save, ShieldAlert } from 'lucide-react';
 import API_BASE from '../config/api';
+import { api } from '../utils/api';
 
 const Settings = () => {
     const [phase, setPhase] = useState('');
@@ -31,13 +32,10 @@ const Settings = () => {
         if (!window.confirm("WARNING: This will permanently wipe all current non-archived vote data, reset everyone's 'has_voted' status, and delete the cryptographic keys. Are you SURE you want to Start a New Election?")) return;
         setLoading(true);
         try {
-            const token = localStorage.getItem('sysadmin_token');
+            const headers = api.getHeaders();
             const res = await fetch(`${API_BASE}/api/admin/election/reset`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                }
+                headers
             });
             if (res.ok) {
                 setMessage({ type: 'success', text: 'Election successfully reset to PRE-POLL state.' });
@@ -60,13 +58,10 @@ const Settings = () => {
         if (newKillSwitch !== undefined) payload.isKillSwitch = newKillSwitch;
 
         try {
-            const token = localStorage.getItem('sysadmin_token');
+            const headers = api.getHeaders();
             const res = await fetch(`${API_BASE}/api/election/update`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
+                headers,
                 body: JSON.stringify(payload)
             });
 
@@ -209,12 +204,10 @@ const Settings = () => {
                                 <button
                                     onClick={async () => {
                                         try {
-                                            const token = localStorage.getItem('sysadmin_token');
+                                            const headers = api.getHeaders();
                                             const res = await fetch(`${API_BASE}/api/admin/inject-fake-vote`, {
                                                 method: 'POST',
-                                                headers: { 
-                                                    'Authorization': token ? `Bearer ${token}` : ''
-                                                }
+                                                headers
                                             });
                                             if (res.ok) {
                                                 setMessage({ type: 'success', text: 'Simulated Database Breach. Watchdog alert triggered.' });
@@ -234,12 +227,10 @@ const Settings = () => {
                                 <button
                                     onClick={async () => {
                                         try {
-                                            const token = localStorage.getItem('sysadmin_token');
+                                            const headers = api.getHeaders();
                                             const res = await fetch(`${API_BASE}/api/admin/clear-fake-votes`, {
                                                 method: 'POST',
-                                                headers: { 
-                                                    'Authorization': token ? `Bearer ${token}` : ''
-                                                }
+                                                headers
                                             });
                                             if (res.ok) {
                                                 setMessage({ type: 'success', text: 'Test data cleared! The Watchdog alarm should stop.' });

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Shield, Search, CheckCircle, XCircle, AlertTriangle, Lock, Filter, Vote } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import API_BASE from '../config/api';
+import { api } from '../utils/api';
 
 const UserIntegrity = () => {
     const [voters, setVoters] = useState([]);
@@ -18,15 +19,16 @@ const UserIntegrity = () => {
 
     const fetchVoters = async () => {
         try {
-            const token = localStorage.getItem('sysadmin_token');
+            const headers = api.getHeaders();
             const res = await fetch(`${API_BASE}/api/admin/voters`, {
-                headers: {
-                    'Authorization': token ? `Bearer ${token}` : ''
-                }
+                headers
             });
             if (res.ok) {
                 const data = await res.json();
                 setVoters(data);
+            } else {
+                const errorData = await res.json().catch(() => ({}));
+                console.error("Voters Fetch Error:", errorData.error || res.statusText);
             }
         } catch (err) {
             console.error("Failed to fetch voters", err);
