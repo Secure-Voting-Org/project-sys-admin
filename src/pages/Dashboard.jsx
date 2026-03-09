@@ -53,6 +53,43 @@ const Dashboard = () => {
 
     useEffect(() => {
         fetchDashboardData();
+
+        // Establish Real-Time SSE Connection
+        const token = localStorage.getItem('sysadmin_token');
+        if (!token) return;
+        
+        const source = new EventSource(`${API_BASE}/api/audit/stream?token=${token}`);
+        
+        source.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'ping') return;
+                
+                // Add new log to recent activity
+                setRecentLogs(prev => {
+                    // avoid duplicates by ID
+                    if (prev.some(l => l.id === data.id)) return prev;
+                    return [data, ...prev].slice(0, 5);
+                });
+                
+                // Check if it's a security alert
+                const isAlert = data.event && (data.event.includes('FAILED') || data.event.includes('LOCKED') || data.event.includes('UNAUTHORIZED'));
+                if (isAlert) {
+                    setStats(prev => ({ ...prev, securityIncidents: prev.securityIncidents + 1 }));
+                    setAlerts(prev => {
+                        if (prev.some(a => a.id === data.id)) return prev;
+                        return [
+                            { id: data.id, type: 'critical', message: `${data.event} - ${data.user_id || 'Unknown'}`, time: new Date(data.created_at).toLocaleTimeString() },
+                            ...prev
+                        ].slice(0, 3);
+                    });
+                }
+            } catch (err) {
+                console.error("SSE parse error", err);
+            }
+        };
+
+        return () => source.close();
     }, []);
 
     const fetchDashboardData = async () => {

@@ -9,6 +9,10 @@ const Settings = () => {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState(null);
 
+    // Password change state
+    const [pwdForm, setPwdForm] = useState({ current: '', new: '', confirm: '' });
+    const [pwdLoading, setPwdLoading] = useState(false);
+
     React.useEffect(() => {
         fetchSettings();
     }, []);
@@ -79,6 +83,37 @@ const Settings = () => {
 
         // Clear message after 3 seconds
         setTimeout(() => setMessage(null), 3000);
+    };
+
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        setPwdLoading(true);
+        if (pwdForm.new !== pwdForm.confirm) {
+            setMessage({ type: 'error', text: 'New passwords do not match.' });
+            setPwdLoading(false);
+            setTimeout(() => setMessage(null), 3000);
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/api/sysadmin/change-password`, {
+                method: 'PUT',
+                headers: api.getHeaders(),
+                body: JSON.stringify({ currentPassword: pwdForm.current, newPassword: pwdForm.new })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setMessage({ type: 'success', text: 'Password changed successfully.' });
+                setPwdForm({ current: '', new: '', confirm: '' });
+            } else {
+                setMessage({ type: 'error', text: data.error || 'Failed to change password.' });
+            }
+        } catch (err) {
+            setMessage({ type: 'error', text: 'Network error.' });
+        } finally {
+            setPwdLoading(false);
+            setTimeout(() => setMessage(null), 3000);
+        }
     };
 
     return (
@@ -161,7 +196,34 @@ const Settings = () => {
                 </p>
             </div>
 
-            <div className="bg-red-50 p-6 rounded-xl border border-red-200">
+            {/* Admin Password Change */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mt-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Update Master Password</h3>
+                <form onSubmit={handlePasswordChange} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Current Password</label>
+                        <input type="password" required value={pwdForm.current} onChange={e => setPwdForm({ ...pwdForm, current: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">New Password</label>
+                        <input type="password" required value={pwdForm.new} onChange={e => setPwdForm({ ...pwdForm, new: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Confirm New Password</label>
+                        <input type="password" required value={pwdForm.confirm} onChange={e => setPwdForm({ ...pwdForm, confirm: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div className="md:col-span-3">
+                        <button type="submit" disabled={pwdLoading} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold text-sm disabled:opacity-50 transition-colors">
+                            {pwdLoading ? 'Updating...' : 'Change Password'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div className="bg-red-50 p-6 rounded-xl border border-red-200 mt-6">
                 <div className="flex items-start gap-4">
                     <div className="p-3 bg-red-100 text-red-600 rounded-lg">
                         <ShieldAlert size={24} />

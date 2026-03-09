@@ -7,11 +7,14 @@ export default function AuditLogs() {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeTab, setActiveTab] = useState('logs');
+    const [ledger, setLedger] = useState([]);
     const [integrityStatus, setIntegrityStatus] = useState({ status: 'LOADING', lastChecked: null });
     const [nextCheckIn, setNextCheckIn] = useState(5);
 
     useEffect(() => {
-        fetchLogs();
+        if (activeTab === 'logs') fetchLogs();
+        if (activeTab === 'ledger') fetchLedger();
         fetchIntegrityStatus();
 
         const timer = setInterval(() => {
@@ -64,8 +67,23 @@ export default function AuditLogs() {
         }
     };
 
+    const fetchLedger = async () => {
+        setLoading(true);
+        try {
+            const headers = api.getHeaders();
+            const res = await fetch(`${API_BASE}/api/audit/ledger`, { headers });
+            const data = await res.json();
+            if (Array.isArray(data)) setLedger(data);
+        } catch (err) {
+            console.error("Failed to fetch ledger");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleManualRefresh = () => {
-        fetchLogs();
+        if (activeTab === 'logs') fetchLogs();
+        if (activeTab === 'ledger') fetchLedger();
         fetchIntegrityStatus();
         setNextCheckIn(5);
     };
@@ -117,9 +135,9 @@ export default function AuditLogs() {
             <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                        <Lock className="text-blue-600" /> System Audit Logs
+                        <Lock className="text-blue-600" /> Immutable Records
                     </h2>
-                    <p className="text-gray-800 text-sm mt-1">Immutable record of all critical system events.</p>
+                    <p className="text-gray-800 text-sm mt-1">Audit logs and blockchain ledger verification.</p>
                 </div>
                 <button
                     type="button"
@@ -132,12 +150,29 @@ export default function AuditLogs() {
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-4 border-b border-gray-200 bg-gray-50 flex gap-4">
-                    <div className="relative flex-1 max-w-md">
-                        <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800" />
-                        <input
-                            type="text"
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200 pb-1 gap-2">
+                <button
+                    onClick={() => setActiveTab('logs')}
+                    className={`px-6 py-2 rounded-t-lg font-bold text-sm transition-colors ${activeTab === 'logs' ? 'bg-white text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                    System Audit Logs
+                </button>
+                <button
+                    onClick={() => setActiveTab('ledger')}
+                    className={`px-6 py-2 rounded-t-lg font-bold text-sm transition-colors ${activeTab === 'ledger' ? 'bg-white text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                    Blockchain Ledger
+                </button>
+            </div>
+
+            {activeTab === 'logs' ? (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="p-4 border-b border-gray-200 bg-gray-50 flex gap-4">
+                        <div className="relative flex-1 max-w-md">
+                            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800" />
+                            <input
+                                type="text"
                             placeholder="Search logs..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -187,6 +222,44 @@ export default function AuditLogs() {
                     </table>
                 </div>
             </div>
+            ) : (
+                <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-700 overflow-hidden">
+                    <div className="p-4 border-b border-slate-700 bg-slate-800 flex justify-between items-center">
+                        <h3 className="text-white font-mono font-bold flex items-center gap-2">
+                            <Database size={18} className="text-blue-400" /> Raw Blockchain Blocks
+                        </h3>
+                        <span className="text-slate-400 font-mono text-sm">{ledger.length} Blocks Synced</span>
+                    </div>
+                    <div className="overflow-x-auto p-4 space-y-4">
+                        {loading ? (
+                            <div className="text-center text-slate-400 py-8 font-mono">Syncing Ledger...</div>
+                        ) : ledger.length === 0 ? (
+                            <div className="text-center text-slate-500 py-8 font-mono">No blocks found.</div>
+                        ) : (
+                            ledger.map((block, idx) => (
+                                <div key={idx} className="bg-slate-800 border border-slate-700 rounded-lg p-4 font-mono text-sm">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="text-blue-400 font-bold">Block #{ledger.length - idx - 1}</div>
+                                        <div className="text-slate-500 text-xs">{new Date(block.timestamp).toISOString()}</div>
+                                    </div>
+                                    <div className="grid grid-cols-[100px_1fr] gap-2 mb-1">
+                                        <span className="text-slate-500">Hash:</span>
+                                        <span className="text-green-400 break-all">{block.transaction_hash}</span>
+                                    </div>
+                                    <div className="grid grid-cols-[100px_1fr] gap-2 mb-1">
+                                        <span className="text-slate-500">Prev Hash:</span>
+                                        <span className="text-orange-400 break-all">{block.prev_hash}</span>
+                                    </div>
+                                    <div className="grid grid-cols-[100px_1fr] gap-2">
+                                        <span className="text-slate-500">Payload:</span>
+                                        <span className="text-slate-300">Constituency: {block.constituency}</span>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
