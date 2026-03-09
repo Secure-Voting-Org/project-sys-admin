@@ -7,7 +7,7 @@ const ObserverManagement = () => {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [search, setSearch] = useState('');
-    const [form, setForm] = useState({ username: '', password: '', fullName: '', email: '', role: 'general' });
+    const [form, setForm] = useState({ mobile_number: '', password: '', fullName: '', email: '', role: 'general' });
     const [submitting, setSubmitting] = useState(false);
     const [msg, setMsg] = useState(null);
 
@@ -38,8 +38,8 @@ const ObserverManagement = () => {
             });
             const data = await res.json();
             if (res.ok) {
-                setMsg({ type: 'success', text: `Observer "${form.username}" created!` });
-                setForm({ username: '', password: '', fullName: '', email: '', role: 'general' });
+                setMsg({ type: 'success', text: `Observer "${form.mobile_number}" created!` });
+                setForm({ mobile_number: '', password: '', fullName: '', email: '', role: 'general' });
                 setShowForm(false);
                 fetchObservers();
             } else {
@@ -49,17 +49,17 @@ const ObserverManagement = () => {
         finally { setSubmitting(false); }
     };
 
-    const handleDelete = async (id, username) => {
-        if (!window.confirm(`Delete observer "${username}"? This cannot be undone.`)) return;
+    const handleDelete = async (id, mobileNumber) => {
+        if (!window.confirm(`Delete observer "${mobileNumber}"? This cannot be undone.`)) return;
         try {
             const res = await fetch(`${API_BASE}/api/sysadmin/observers/${id}`, { method: 'DELETE', headers: headers() });
-            if (res.ok) { setMsg({ type: 'success', text: `Observer "${username}" removed.` }); fetchObservers(); }
+            if (res.ok) { setMsg({ type: 'success', text: `Observer "${mobileNumber}" removed.` }); fetchObservers(); }
             else { setMsg({ type: 'error', text: 'Failed to delete observer' }); }
         } catch { setMsg({ type: 'error', text: 'Network error' }); }
     };
 
     const filtered = observers.filter(o =>
-        o.username?.toLowerCase().includes(search.toLowerCase()) ||
+        o.mobile_number?.toLowerCase().includes(search.toLowerCase()) ||
         o.full_name?.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -90,7 +90,7 @@ const ObserverManagement = () => {
                     <h3 className="font-bold text-gray-800 mb-4">New Observer Account</h3>
                     <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[
-                            { label: 'Username *', key: 'username', type: 'text', placeholder: 'e.g. observer2' },
+                            { label: 'Mobile Number *', key: 'mobile_number', type: 'text', placeholder: 'e.g. 9999999990' },
                             { label: 'Password *', key: 'password', type: 'password', placeholder: '••••••••' },
                             { label: 'Full Name', key: 'fullName', type: 'text', placeholder: 'Election Observer Two' },
                             { label: 'Email', key: 'email', type: 'email', placeholder: 'observer@domain.com' },
@@ -148,7 +148,7 @@ const ObserverManagement = () => {
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
                             <tr>
-                                {['Username', 'Full Name', 'Email', 'Role', 'Created', 'Action'].map(h => (
+                                {['Mobile Number', 'Full Name', 'Email', 'Role', 'Created', 'Action'].map(h => (
                                     <th key={h} className="px-4 py-3 text-left">{h}</th>
                                 ))}
                             </tr>
@@ -156,7 +156,7 @@ const ObserverManagement = () => {
                         <tbody className="divide-y divide-gray-50">
                             {filtered.map(o => (
                                 <tr key={o.id} className="hover:bg-gray-50">
-                                    <td className="px-4 py-3 font-semibold text-gray-800">{o.username}</td>
+                                    <td className="px-4 py-3 font-semibold text-gray-800">{o.mobile_number}</td>
                                     <td className="px-4 py-3 text-gray-600">{o.full_name || '—'}</td>
                                     <td className="px-4 py-3 text-gray-500">{o.email || '—'}</td>
                                     <td className="px-4 py-3">
@@ -164,8 +164,8 @@ const ObserverManagement = () => {
                                     </td>
                                     <td className="px-4 py-3 text-gray-400 text-xs">{new Date(o.created_at).toLocaleDateString()}</td>
                                     <td className="px-4 py-3">
-                                        {o.username !== 'observer1' && (
-                                            <button onClick={() => handleDelete(o.id, o.username)}
+                                        {o.mobile_number !== '9999999990' && (
+                                            <button onClick={() => handleDelete(o.id, o.mobile_number)}
                                                 className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors">
                                                 <Trash2 size={15} />
                                             </button>
