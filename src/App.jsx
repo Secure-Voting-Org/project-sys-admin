@@ -10,6 +10,8 @@ import AdminManagement from './pages/AdminManagement';
 import SystemHealth from './pages/SystemHealth';
 import AuditLogs from './pages/AuditLogs';
 import Settings from './pages/Settings';
+import ElectoralRoll from './pages/ElectoralRoll';
+import ObserverManagement from './pages/ObserverManagement';
 
 // Protected Route Component
 const ProtectedRoute = () => {
@@ -43,6 +45,10 @@ function App() {
 
             {/* Configuration */}
             <Route path="settings" element={<Settings />} />
+
+            {/* Electoral Roll & Observers */}
+            <Route path="electoral-roll" element={<ElectoralRoll />} />
+            <Route path="observers" element={<ObserverManagement />} />
           </Route>
         </Route>
 

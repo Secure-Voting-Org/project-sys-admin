@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Search, CheckCircle, XCircle, AlertTriangle, Lock, Filter, Vote } from 'lucide-react';
+import { Shield, Search, CheckCircle, XCircle, AlertTriangle, Lock, Filter, Vote, Download } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import API_BASE from '../config/api';
 import { api } from '../utils/api';
@@ -60,6 +60,31 @@ const UserIntegrity = () => {
         { id: 'locked', label: 'Locked Accounts', icon: Lock },
     ];
 
+    const handleExport = async () => {
+        try {
+            const token = localStorage.getItem('sysadmin_token');
+            const res = await fetch(`${API_BASE}/api/sysadmin/export-voters`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `voters_export_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } else {
+                alert("Export failed. Please check permissions.");
+            }
+        } catch (err) {
+            console.error("Export error:", err);
+            alert("Network error during export.");
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -67,15 +92,20 @@ const UserIntegrity = () => {
                     <h2 className="text-2xl font-bold text-gray-800">User Integrity</h2>
                     <p className="text-gray-500 text-sm">Monitor voter accounts, verification status, and voting activity.</p>
                 </div>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Search Voter ID or Name..."
-                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-64"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search Voter ID or Name..."
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-64 text-sm"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <button onClick={handleExport} className="flex items-center gap-2 bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors whitespace-nowrap">
+                        <Download size={16} /> Export CSV
+                    </button>
                 </div>
             </div>
 

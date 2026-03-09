@@ -64,7 +64,15 @@ const LifecycleController = () => {
     };
 
     const startNewElection = async () => {
-        if (!window.confirm("WARNING: This will permanently wipe all current non-archived vote data, reset everyone's 'has_voted' status, and delete the cryptographic keys. Are you SURE you want to Start a New Election?")) return;
+        const confirmMsg = "WARNING: This will permanently wipe all current non-archived vote data, reset everyone's 'has_voted' status, and delete the cryptographic keys. Are you SURE you want to Start a New Election?";
+        if (!window.confirm(confirmMsg)) return;
+
+        const typedPhrase = window.prompt("Type 'CONFIRM RESET' exactly as shown to proceed with the election wipe:");
+        if (typedPhrase !== "CONFIRM RESET") {
+            alert("Confirmation failed or cancelled. Reset aborted.");
+            return;
+        }
+
         setLoading(true);
         try {
             const headers = api.getHeaders();

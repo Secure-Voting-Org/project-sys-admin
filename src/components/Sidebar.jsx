@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Users, Settings, LogOut, CheckCircle, FileText, Vote, LayoutDashboard } from 'lucide-react';
+import { Home, Users, Settings, LogOut, CheckCircle, FileText, Vote, LayoutDashboard, UserCheck, Shield } from 'lucide-react';
 
 const Sidebar = () => {
     return (
@@ -16,6 +16,9 @@ const Sidebar = () => {
                 <div className="text-xs font-bold text-gray-800 uppercase tracking-wider mt-6 mb-2 px-4">Monitoring</div>
                 <NavItem to="/health" icon={<CheckCircle size={20} />} label="System Health" />
                 <NavItem to="/audit-logs" icon={<FileText size={20} />} label="Audit Logs" />
+                <div className="text-xs font-bold text-gray-800 uppercase tracking-wider mt-6 mb-2 px-4">Electoral Data</div>
+                <NavItem to="/electoral-roll" icon={<UserCheck size={20} />} label="Electoral Roll" />
+                <NavItem to="/observers" icon={<Shield size={20} />} label="Observer Management" />
 
                 <div className="text-xs font-bold text-gray-800 uppercase tracking-wider mt-6 mb-2 px-4">Configuration</div>
                 <NavItem to="/settings" icon={<Settings size={20} />} label="Global Settings" />
