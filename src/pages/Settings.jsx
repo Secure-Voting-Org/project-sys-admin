@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ToggleLeft, ToggleRight, Save, ShieldAlert } from 'lucide-react';
+import { ToggleLeft, ToggleRight, Save, ShieldAlert, Database, Download, RotateCcw, Loader } from 'lucide-react';
 import API_BASE from '../config/api';
 import { api } from '../utils/api';
 
@@ -12,6 +12,53 @@ const Settings = () => {
     // Password change state
     const [pwdForm, setPwdForm] = useState({ current: '', new: '', confirm: '' });
     const [pwdLoading, setPwdLoading] = useState(false);
+    // Backup state
+    const [backups, setBackups] = useState([]);
+    const [backupLoading, setBackupLoading] = useState(false);
+    const [backupMsg, setBackupMsg] = useState(null);
+
+    const fetchBackups = async () => {
+        try {
+            const headers = api.getHeaders();
+            const res = await fetch(`${API_BASE}/api/sysadmin/backup/list`, { headers });
+            const data = await res.json();
+            if (data.success) setBackups(data.backups || []);
+        } catch {}
+    };
+
+    const triggerBackup = async () => {
+        setBackupLoading(true);
+        setBackupMsg(null);
+        try {
+            const headers = api.getHeaders();
+            const res = await fetch(`${API_BASE}/api/sysadmin/backup/trigger`, { method: 'POST', headers });
+            const data = await res.json();
+            if (data.success) {
+                setBackupMsg({ type: 'success', text: `✅ Backup created: ${data.backup.filename}` });
+                fetchBackups();
+            } else throw new Error(data.error);
+        } catch (e) {
+            setBackupMsg({ type: 'error', text: `❌ ${e.message}` });
+        } finally {
+            setBackupLoading(false);
+        }
+    };
+
+    const restoreBackup = async (filename) => {
+        if (!window.confirm(`Are you sure you want to RESTORE from ${filename}? This will overwrite the current database!`)) return;
+        setBackupLoading(true);
+        try {
+            const headers = { ...api.getHeaders(), 'Content-Type': 'application/json' };
+            const res = await fetch(`${API_BASE}/api/sysadmin/backup/restore`, { method: 'POST', headers, body: JSON.stringify({ filename }) });
+            const data = await res.json();
+            if (data.success) setBackupMsg({ type: 'success', text: `✅ Restored from ${filename}` });
+            else throw new Error(data.error);
+        } catch (e) {
+            setBackupMsg({ type: 'error', text: `❌ ${e.message}` });
+        } finally {
+            setBackupLoading(false);
+        }
+    };
 
     React.useEffect(() => {
         fetchSettings();
@@ -313,6 +360,58 @@ const Settings = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* ── Backup & Recovery ─────────────────────────────────── */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-50 rounded-lg"><Database size={20} className="text-blue-600" /></div>
+                        <div>
+                            <h3 className="font-bold text-gray-800">Database Backup & Recovery</h3>
+                            <p className="text-sm text-gray-500">Create and restore database snapshots</p>
+                        </div>
+                    </div>
+                    <button onClick={() => { fetchBackups(); }} className="text-sm text-blue-600 underline">Refresh list</button>
+                </div>
+
+                {backupMsg && (
+                    <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${backupMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                        {backupMsg.text}
+                    </div>
+                )}
+
+                <button
+                    onClick={triggerBackup}
+                    disabled={backupLoading}
+                    className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors mb-4"
+                >
+                    {backupLoading ? <Loader size={16} className="animate-spin" /> : <Download size={16} />}
+                    Create Backup Now
+                </button>
+
+                {backups.length > 0 ? (
+                    <div className="space-y-2">
+                        <p className="text-sm font-semibold text-gray-600">Available Backups ({backups.length})</p>
+                        {backups.map(b => (
+                            <div key={b.filename} className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-lg border border-gray-100">
+                                <div>
+                                    <p className="text-sm font-mono text-gray-700">{b.filename}</p>
+                                    <p className="text-xs text-gray-400">{b.sizeHuman} · {new Date(b.createdAt).toLocaleString()}</p>
+                                </div>
+                                <button
+                                    onClick={() => restoreBackup(b.filename)}
+                                    disabled={backupLoading}
+                                    className="flex items-center gap-1 text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200 hover:bg-orange-100 transition-colors"
+                                >
+                                    <RotateCcw size={13} /> Restore
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-gray-400 italic">No backups yet. Click "Create Backup Now" to create the first snapshot.</p>
+                )}
             </div>
         </div>
     );
