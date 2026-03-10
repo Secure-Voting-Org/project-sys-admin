@@ -64,14 +64,7 @@ const LifecycleController = () => {
     };
 
     const startNewElection = async () => {
-        const confirmMsg = "WARNING: This will permanently wipe all current non-archived vote data, reset everyone's 'has_voted' status, and delete the cryptographic keys. Are you SURE you want to Start a New Election?";
-        if (!window.confirm(confirmMsg)) return;
-
-        const typedPhrase = window.prompt("Type 'CONFIRM RESET' exactly as shown to proceed with the election wipe:");
-        if (typedPhrase !== "CONFIRM RESET") {
-            alert("Confirmation failed or cancelled. Reset aborted.");
-            return;
-        }
+        if (!window.confirm("Are you sure you want to start a new election cycle? This will reset the phase back to PRE_POLL.")) return;
 
         setLoading(true);
         try {
@@ -81,7 +74,7 @@ const LifecycleController = () => {
                 headers
             });
             fetchStatus();
-            alert("Election has been effectively reset to PRE_POLL state.");
+            alert("Election reset to PRE_POLL. All previous vote data is preserved.");
         } catch (err) {
             console.log(err);
             alert("Reset failed.");
@@ -168,11 +161,11 @@ const LifecycleController = () => {
                                 disabled={loading}
                                 onClick={startNewElection}
                                 style={{
-                                    background: '#ffebee', color: '#c62828', border: '2px solid #c62828',
+                                    background: '#E3F2FD', color: '#1565C0', border: '2px solid #1565C0',
                                     fontWeight: 'bold'
                                 }}
                             >
-                                🔄 Start New Election (Wipe & Reset)
+                                🔄 Start New Election
                             </button>
                         )}
 

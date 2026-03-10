@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Vote, AlertTriangle, Radio, TrendingUp, Building2, UserCheck, ArrowUp, Activity, Shield, Database, Server, CheckCircle } from 'lucide-react';
+import { Users, Vote, AlertTriangle, Radio, TrendingUp, Building2, UserCheck, ArrowUp, Activity, Shield, Database, Server, CheckCircle, Copy, Key } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API_BASE from '../config/api';
 import { api } from '../utils/api';
-
 
 const Widget = ({ title, value, icon, color, subtext, onClick, isAlert }) => (
     <div
@@ -50,6 +49,8 @@ const Dashboard = () => {
     const [alerts, setAlerts] = useState([]);
     const [error, setError] = useState(null);
     const [debugInfo, setDebugInfo] = useState("");
+    const [electionPhase, setElectionPhase] = useState('PRE_POLL');
+    const [keyShares, setKeyShares] = useState(null);
 
     useEffect(() => {
         fetchDashboardData();
@@ -137,6 +138,31 @@ const Dashboard = () => {
             const recentCritical = securityIncidents.slice(0, 3).map((l, i) => ({
                 id: i, type: 'critical', message: `${l.event} - ${l.user_id || 'Unknown'}`, time: new Date(l.created_at).toLocaleTimeString()
             }));
+
+            // 4. Fetch Election Phase and Keys
+            let currentPhase = 'PRE_POLL';
+            try {
+                const phaseRes = await fetch(`${baseUrl}/api/election/status`, { headers });
+                if (phaseRes.ok) {
+                    const phaseData = await phaseRes.json();
+                    currentPhase = phaseData.phase;
+                    setElectionPhase(currentPhase);
+                }
+            } catch (err) {
+                console.error("Failed to fetch election phase", err);
+            }
+
+            if (currentPhase === 'POST_POLL') {
+                try {
+                    const keysRes = await fetch(`${baseUrl}/api/sysadmin/election/keys`, { headers });
+                    if (keysRes.ok) {
+                        const keysData = await keysRes.json();
+                        setKeyShares(keysData.shares);
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch key shares:", err);
+                }
+            }
 
             setStats({
                 activeAdmins: Array.isArray(admins) ? admins.length : 0,
@@ -237,6 +263,50 @@ const Dashboard = () => {
                             <HealthItem label="Blockchain Network" status="Syncing" />
                             <HealthItem label="Identity Service" status="Operational" />
                         </div>
+                    </div>
+
+                    {/* Decryption Keys Panel */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <Key size={20} className={electionPhase === 'POST_POLL' ? 'text-green-600' : 'text-gray-400'} />
+                            Election Decryption Keys
+                        </h3>
+                        {electionPhase !== 'POST_POLL' ? (
+                            <div className="bg-gray-50 p-6 rounded-lg text-center border border-gray-200">
+                                <Shield className="mx-auto text-gray-400 mb-3" size={32} />
+                                <p className="text-gray-600 font-medium">Keys are securely locked.</p>
+                                <p className="text-sm text-gray-500 mt-1">Can only be accessed during the POST_POLL phase to ensure election integrity.</p>
+                            </div>
+                        ) : keyShares ? (
+                            <div className="space-y-4">
+                                <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm mb-4 flex items-start gap-2">
+                                    <CheckCircle size={16} className="mt-0.5" />
+                                    <span>Distribute these shares to the authorized Election Officials for the Tally Ceremony. At least 3 shares are required to reconstruct the master decryption key.</span>
+                                </div>
+                                {Object.entries(keyShares || {}).map(([official, key], idx) => (
+                                    <div key={idx} className="flex flex-col gap-1">
+                                        <label className="text-sm font-semibold text-gray-700">{official}</label>
+                                        <div className="flex items-center gap-2">
+                                            <input 
+                                                type="text" 
+                                                readOnly 
+                                                value={key} 
+                                                className="flex-1 p-2 bg-gray-50 border border-gray-200 rounded text-sm text-gray-500 font-mono"
+                                            />
+                                            <button 
+                                                onClick={() => navigator.clipboard.writeText(key)}
+                                                className="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded border border-blue-200 transition-colors"
+                                                title="Copy to clipboard"
+                                            >
+                                                <Copy size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-sm text-red-500">Failed to load decryption keys. Please check server logs.</div>
+                        )}
                     </div>
 
                     {/* Security Alerts Panel */}
