@@ -23,7 +23,7 @@ const ElectoralRoll = () => {
             const params = new URLSearchParams();
             if (search) params.set('search', search);
             if (filterConstituency) params.set('constituency', filterConstituency);
-            const res = await fetch(`${API_BASE}/api/sysadmin/electoral-roll?${params}`, { headers: headers() });
+            const res = await fetch(`${API_BASE}/api/electoral-roll?${params}`, { headers: headers() });
             const data = await res.json();
             setCitizens(Array.isArray(data) ? data : []);
         } catch { setCitizens([]); }
@@ -37,8 +37,10 @@ const ElectoralRoll = () => {
         setSubmitting(true);
         setMsg(null);
         try {
-            const res = await fetch(`${API_BASE}/api/sysadmin/electoral-roll`, {
-                method: 'POST', headers: headers(), body: JSON.stringify(form)
+            // Note: Single insertions can use the bulk import route too using an array of 1
+            const res = await fetch(`${API_BASE}/api/electoral-roll/import`, {
+                method: 'POST', headers: headers(), 
+                body: JSON.stringify({ csvData: [ { aadhaar_number: form.aadhaar_number, full_name: form.name, constituency: form.constituency } ] })
             });
             const data = await res.json();
             if (res.ok) {
@@ -53,10 +55,55 @@ const ElectoralRoll = () => {
         finally { setSubmitting(false); }
     };
 
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setSubmitting(true);
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+            const text = evt.target.result;
+            // Basic CSV parsing
+            const rows = text.split('\n').map(row => row.split(',')).filter(r => r.length >= 3);
+            const headersRow = rows.shift(); // remove header
+            
+            const csvData = rows.map(r => ({
+                aadhaar_number: r[0]?.trim(),
+                full_name: r[1]?.trim(),
+                constituency: r[2]?.trim()
+            })).filter(r => r.aadhaar_number && r.full_name && r.constituency);
+
+            if (csvData.length === 0) {
+                setMsg({ type: 'error', text: 'No valid data found in CSV.' });
+                setSubmitting(false);
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/electoral-roll/import`, {
+                    method: 'POST', headers: headers(), body: JSON.stringify({ csvData })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    setMsg({ type: 'success', text: data.message || `Imported ${csvData.length} records.` });
+                    fetchCitizens();
+                } else {
+                    setMsg({ type: 'error', text: data.error || 'Failed to import CSV' });
+                }
+            } catch (err) {
+                setMsg({ type: 'error', text: 'Network error during import.' });
+            } finally {
+                setSubmitting(false);
+                e.target.value = null; // reset input
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const handleDelete = async (aadhaar, name) => {
         if (!window.confirm(`Remove citizen "${name}" (${aadhaar}) from the electoral roll?`)) return;
         try {
-            const res = await fetch(`${API_BASE}/api/sysadmin/electoral-roll/${aadhaar}`, { method: 'DELETE', headers: headers() });
+            const res = await fetch(`${API_BASE}/api/electoral-roll/${aadhaar}`, { method: 'DELETE', headers: headers() });
             if (res.ok) { setMsg({ type: 'success', text: `Citizen removed.` }); fetchCitizens(); }
             else { setMsg({ type: 'error', text: 'Failed to remove citizen' }); }
         } catch { setMsg({ type: 'error', text: 'Network error' }); }
@@ -66,15 +113,21 @@ const ElectoralRoll = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">Electoral Roll</h2>
                     <p className="text-sm text-gray-500 mt-1">Manage the list of citizens eligible to register as voters.</p>
                 </div>
-                <button onClick={() => setShowForm(!showForm)}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
-                    <Plus size={16} /> Add Citizen
-                </button>
+                <div className="flex flex-wrap gap-2">
+                    <label className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors cursor-pointer">
+                        <Download size={16} className="rotate-180" /> Bulk Import (CSV)
+                        <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} disabled={submitting} />
+                    </label>
+                    <button onClick={() => setShowForm(!showForm)}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
+                        <Plus size={16} /> Add Citizen
+                    </button>
+                </div>
             </div>
 
             {msg && (
@@ -157,8 +210,8 @@ const ElectoralRoll = () => {
                             {citizens.map(c => (
                                 <tr key={c.aadhaar_number} className="hover:bg-gray-50">
                                     <td className="px-4 py-3 font-mono text-gray-700 text-xs">{c.aadhaar_number}</td>
-                                    <td className="px-4 py-3 font-semibold text-gray-800">{c.name}</td>
-                                    <td className="px-4 py-3 text-gray-500">{c.phone}</td>
+                                    <td className="px-4 py-3 font-semibold text-gray-800">{c.full_name}</td>
+                                    <td className="px-4 py-3 text-gray-500">{c.phone || '-'}</td>
                                     <td className="px-4 py-3 text-gray-600">{c.constituency}</td>
                                     <td className="px-4 py-3">
                                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${c.is_registered ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>

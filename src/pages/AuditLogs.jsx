@@ -167,61 +167,62 @@ export default function AuditLogs() {
             </div>
 
             {activeTab === 'logs' ? (
+                // ... Logs view remains unchanged ...
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div className="p-4 border-b border-gray-200 bg-gray-50 flex gap-4">
                         <div className="relative flex-1 max-w-md">
                             <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800" />
                             <input
                                 type="text"
-                            placeholder="Search logs..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        />
+                                placeholder="Search logs..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                        </div>
+                        <div className="ml-auto flex items-center gap-2 text-sm text-gray-500">
+                            <span className="font-bold text-gray-800">{filteredLogs.length}</span> Total Events
+                        </div>
                     </div>
-                    <div className="ml-auto flex items-center gap-2 text-sm text-gray-500">
-                        <span className="font-bold text-gray-800">{filteredLogs.length}</span> Total Events
-                    </div>
-                </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-100 text-gray-800 text-xs uppercase font-bold">
-                            <tr>
-                                <th className="px-6 py-4">Timestamp</th>
-                                <th className="px-6 py-4">Event</th>
-                                <th className="px-6 py-4">User Identity</th>
-                                <th className="px-6 py-4">IP Address</th>
-                                <th className="px-6 py-4">Details</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {filteredLogs.map((log) => {
-                                const style = getEventStyle(log.event);
-                                const Icon = style.icon;
-                                return (
-                                    <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4 text-sm text-gray-800 whitespace-nowrap">
-                                            {new Date(log.created_at).toLocaleString()}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border" style={{ backgroundColor: style.bg, color: style.color, borderColor: style.border }}>
-                                                <Icon size={12} />
-                                                {log.event.replace(/_/g, ' ')}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 font-mono text-sm">{log.user_id || '-'}</td>
-                                        <td className="px-6 py-4 text-gray-800 text-sm">{log.ip_address}</td>
-                                        <td className="px-6 py-4 text-xs font-mono text-gray-800 max-w-xs truncate">
-                                            {JSON.stringify(log.details)}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-100 text-gray-800 text-xs uppercase font-bold">
+                                <tr>
+                                    <th className="px-6 py-4">Timestamp</th>
+                                    <th className="px-6 py-4">Event</th>
+                                    <th className="px-6 py-4">User Identity</th>
+                                    <th className="px-6 py-4">IP Address</th>
+                                    <th className="px-6 py-4">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {filteredLogs.map((log) => {
+                                    const style = getEventStyle(log.event);
+                                    const Icon = style.icon;
+                                    return (
+                                        <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 text-sm text-gray-800 whitespace-nowrap">
+                                                {new Date(log.created_at).toLocaleString()}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border" style={{ backgroundColor: style.bg, color: style.color, borderColor: style.border }}>
+                                                    <Icon size={12} />
+                                                    {log.event.replace(/_/g, ' ')}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 font-mono text-sm">{log.user_id || '-'}</td>
+                                            <td className="px-6 py-4 text-gray-800 text-sm">{log.ip_address}</td>
+                                            <td className="px-6 py-4 text-xs font-mono text-gray-800 max-w-xs truncate" title={JSON.stringify(log.details)}>
+                                                {JSON.stringify(log.details)}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
             ) : (
                 <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-700 overflow-hidden">
                     <div className="p-4 border-b border-slate-700 bg-slate-800 flex justify-between items-center">
@@ -230,32 +231,86 @@ export default function AuditLogs() {
                         </h3>
                         <span className="text-slate-400 font-mono text-sm">{ledger.length} Blocks Synced</span>
                     </div>
-                    <div className="overflow-x-auto p-4 space-y-4">
+                    <div className="overflow-x-auto p-6 space-y-0 relative">
+                        {/* Vertical line connecting blocks */}
+                        {ledger.length > 0 && (
+                            <div className="absolute left-[38px] top-10 bottom-10 w-1 bg-slate-700 z-0"></div>
+                        )}
+                        
                         {loading ? (
                             <div className="text-center text-slate-400 py-8 font-mono">Syncing Ledger...</div>
                         ) : ledger.length === 0 ? (
                             <div className="text-center text-slate-500 py-8 font-mono">No blocks found.</div>
                         ) : (
-                            ledger.map((block, idx) => (
-                                <div key={idx} className="bg-slate-800 border border-slate-700 rounded-lg p-4 font-mono text-sm">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="text-blue-400 font-bold">Block #{ledger.length - idx - 1}</div>
-                                        <div className="text-slate-500 text-xs">{new Date(block.timestamp).toISOString()}</div>
+                            ledger.map((block, idx) => {
+                                // Assume ledger is descending (latest first). The next item in array is the previous block.
+                                const prevBlockInArray = ledger[idx + 1]; 
+                                // Validate if the current block's prev_hash actually matches the preceding block's hash.
+                                // If it's the genesis block (idx === ledger.length - 1), it's valid.
+                                const isTampered = prevBlockInArray && block.prev_hash !== prevBlockInArray.transaction_hash;
+                                const isGenesis = idx === ledger.length - 1;
+
+                                return (
+                                    <div key={idx} className="relative z-10 flex gap-6 mb-8 last:mb-0">
+                                        {/* Node Marker */}
+                                        <div className="flex flex-col items-center mt-2">
+                                            <div className={`w-10 h-10 rounded-full border-4 flex flex-col items-center justify-center font-bold text-xs bg-slate-900 ${isTampered ? 'border-red-500 text-red-500' : 'border-blue-500 text-blue-500'}`}>
+                                                {isGenesis ? 'G' : ledger.length - idx - 1}
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Block Detail Card */}
+                                        <div className={`flex-1 bg-slate-800 border-2 rounded-lg p-5 font-mono text-sm transition-all hover:bg-slate-750 ${isTampered ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-slate-700 hover:border-blue-500/30'}`}>
+                                            <div className="flex justify-between items-start mb-4 border-b border-slate-700 pb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`font-bold ${isTampered ? 'text-red-400' : 'text-blue-400'}`}>
+                                                        Block #{ledger.length - idx - 1} {isGenesis && '(Genesis)'}
+                                                    </span>
+                                                    {isTampered && (
+                                                        <span className="bg-red-500/20 text-red-500 px-2 py-0.5 rounded text-xs animate-pulse font-bold flex items-center gap-1">
+                                                            <AlertCircle size={12} /> TAMPERED
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="text-slate-500 text-xs flex items-center gap-1">
+                                                    <Clock size={12} />
+                                                    {new Date(block.timestamp).toLocaleString()}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-[90px_1fr] gap-x-2 gap-y-3 mb-2">
+                                                <span className="text-slate-500 uppercase text-xs font-bold leading-5 tracking-wider mt-0.5">Hash</span>
+                                                <span className="text-green-400 font-semibold break-all bg-green-400/10 px-2 py-0.5 rounded border border-green-400/20">{block.transaction_hash}</span>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-[90px_1fr] gap-x-2 gap-y-3 mb-4">
+                                                <span className="text-slate-500 uppercase text-xs font-bold leading-5 tracking-wider mt-0.5">Prev Hash</span>
+                                                <div className="flex flex-col">
+                                                    <span className={`${isTampered ? 'text-red-400 font-bold bg-red-400/10 border-red-400/20' : 'text-orange-400 font-semibold bg-orange-400/10 border-orange-400/20'} break-all px-2 py-0.5 rounded border`}>
+                                                        {block.prev_hash}
+                                                    </span>
+                                                    {isTampered && prevBlockInArray && (
+                                                        <div className="mt-2 text-xs text-red-400 flex flex-col gap-1 p-2 bg-slate-900 rounded border border-red-500/30">
+                                                            <span>Warning: Link broken! Expected hash from Block #{ledger.length - idx - 2}:</span>
+                                                            <span className="text-slate-300 break-all">{prevBlockInArray.transaction_hash}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-[90px_1fr] gap-x-2 gap-y-3 pt-3 border-t border-slate-700">
+                                                <span className="text-slate-500 uppercase text-xs font-bold leading-5 tracking-wider mt-0.5 flex items-center gap-1">Payload</span>
+                                                <div className="bg-slate-900 p-3 rounded text-slate-300 font-medium">
+                                                    <div className="grid grid-cols-[100px_1fr] gap-2">
+                                                        <span className="text-slate-500">Constituency:</span>
+                                                        <span className="text-white">{block.constituency}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="grid grid-cols-[100px_1fr] gap-2 mb-1">
-                                        <span className="text-slate-500">Hash:</span>
-                                        <span className="text-green-400 break-all">{block.transaction_hash}</span>
-                                    </div>
-                                    <div className="grid grid-cols-[100px_1fr] gap-2 mb-1">
-                                        <span className="text-slate-500">Prev Hash:</span>
-                                        <span className="text-orange-400 break-all">{block.prev_hash}</span>
-                                    </div>
-                                    <div className="grid grid-cols-[100px_1fr] gap-2">
-                                        <span className="text-slate-500">Payload:</span>
-                                        <span className="text-slate-300">Constituency: {block.constituency}</span>
-                                    </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </div>
