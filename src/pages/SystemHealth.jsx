@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Server, Database, Activity, CheckCircle, Wifi, WifiOff, RefreshCw, Users, Vote, Layers } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import API_BASE from '../config/api';
+import { api } from '../utils/api';
 
 const MetricCard = ({ icon: Icon, label, value, sub, color = '#3b82f6' }) => (
     <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100" style={{ borderLeft: `4px solid ${color}` }}>
@@ -42,10 +42,8 @@ const SystemHealth = () => {
 
     const fetchMetrics = useCallback(async () => {
         try {
-            const token = localStorage.getItem('sysAdminToken');
-            const res = await fetch(`${API_BASE}/api/sysadmin/system-metrics`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const headers = api.getHeaders();
+            const res = await fetch(`${API_BASE}/api/sysadmin/system-metrics`, { headers });
             if (!res.ok) throw new Error('Failed to fetch');
             const data = await res.json();
             setMetrics(data);
